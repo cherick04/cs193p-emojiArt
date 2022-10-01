@@ -10,15 +10,35 @@ import SwiftUI
 struct EmojiArtDocumentView: View {
     /// ViewModel
     @ObservedObject var document: EmojiArtDocument
+    let testEmojis = "😀😃😄😆🥹🥳🤩😅😂🤣🥲☺️😊"
     
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        VStack(spacing: 0) {
+            documentBody
+            palette
         }
-        .padding()
+    }
+    
+    var documentBody: some View {
+        Color.yellow
+    }
+    
+    var palette: some View {
+        ScrollingEmojisView(emojis: testEmojis)
+    }
+}
+
+struct ScrollingEmojisView: View {
+    let emojis: String
+    
+    var body: some View {
+        ScrollView(.horizontal) {
+            HStack {
+                ForEach(emojis.map { String($0) }, id: \.self) { emoji in
+                    Text(emoji)
+                }
+            }
+        }
     }
 }
 
