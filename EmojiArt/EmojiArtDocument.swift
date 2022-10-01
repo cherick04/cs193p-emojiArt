@@ -13,6 +13,8 @@ class EmojiArtDocument: ObservableObject {
     
     init() {
         emojiArt = EmojiArtModel()
+        emojiArt.addEmoji(text: "😆", location: (-200, -100), size: 80)
+        emojiArt.addEmoji(text: "😃", location: (200, 100), size: 80)
     }
     
     // MARK: - Convenience properties
