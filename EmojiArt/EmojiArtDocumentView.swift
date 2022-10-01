@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  EmojiArtDocumentView.swift
 //  EmojiArt
 //
 //  Created by Erick Chacon on 10/1/22.
@@ -7,7 +7,10 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct EmojiArtDocumentView: View {
+    /// ViewModel
+    @ObservedObject var document: EmojiArtDocument
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -21,6 +24,6 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        EmojiArtDocumentView(document: EmojiArtDocument() )
     }
 }
