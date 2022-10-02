@@ -27,7 +27,14 @@ class EmojiArtDocument: ObservableObject {
     
     var emojis: [EmojiArtModel.Emoji] { emojiArt.emojis }
     var background: EmojiArtModel.Background { emojiArt.background }
+    
     @Published var backgroundImage: UIImage?
+    @Published var backgroundImageFetchStatus = BackgroundImageFetchStatus.idle
+    
+    enum BackgroundImageFetchStatus {
+        case idle
+        case fetching
+    }
     
     // MARK: - Private Methods
     
@@ -36,11 +43,13 @@ class EmojiArtDocument: ObservableObject {
         switch emojiArt.background {
         case .url(let url):
             // fetch the URL
+            backgroundImageFetchStatus = .fetching
             DispatchQueue.global(qos: .userInitiated).async {
                 let imageData = try? Data(contentsOf: url)
                 DispatchQueue.main.async { [weak self] in
                     // Ensure it's the same url being updated
                     if self?.emojiArt.background == EmojiArtModel.Background.url(url) {
+                        self?.backgroundImageFetchStatus = .idle
                         if let imageData = imageData {
                             self?.backgroundImage = UIImage(data: imageData)
                         }
