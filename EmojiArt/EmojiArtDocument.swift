@@ -9,7 +9,13 @@ import SwiftUI
 
 class EmojiArtDocument: ObservableObject {
     
-    @Published private(set) var emojiArt: EmojiArtModel
+    @Published private(set) var emojiArt: EmojiArtModel {
+        didSet {
+            if emojiArt.background != oldValue.background {
+                fetchBackgroundImageIfNecessary()
+            }
+        }
+    }
     
     init() {
         emojiArt = EmojiArtModel()
@@ -21,6 +27,23 @@ class EmojiArtDocument: ObservableObject {
     
     var emojis: [EmojiArtModel.Emoji] { emojiArt.emojis }
     var background: EmojiArtModel.Background { emojiArt.background }
+    @Published var backgroundImage: UIImage?
+    
+    // MARK: - Private Methods
+    
+    private func fetchBackgroundImageIfNecessary() {
+        backgroundImage = nil
+        switch emojiArt.background {
+        case .url(let url):
+            if let imageData = try? Data(contentsOf: url) {
+                backgroundImage = UIImage(data: imageData)
+            }
+        case .imageData(let data):
+            backgroundImage = UIImage(data: data)
+        case .blank:
+            break
+        }
+    }
     
     // MARK: - Intent(s)
     
