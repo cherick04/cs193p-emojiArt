@@ -30,7 +30,7 @@ struct EmojiArtDocumentView: View {
                         .position(position(for: emoji, in: geometry))
                 }
             }
-            .onDrop(of: [.plainText], isTargeted: nil) { providers, location in
+            .onDrop(of: [.plainText, .url, .image], isTargeted: nil) { providers, location in
                 drop(providers: providers, at: location, in: geometry)
             }
         }
@@ -69,7 +69,10 @@ struct EmojiArtDocumentView: View {
     }
     
     private func drop(providers: [NSItemProvider], at location: CGPoint, in geometry: GeometryProxy) -> Bool {
-        providers.loadFirstObject(ofType: String.self) { string in
+        var found = providers.loadObjects(ofType: URL.self) { url in
+            document.setBackground(EmojiArtModel.Background.url(url.imageURL))
+        }
+        found = providers.loadObjects(ofType: String.self) { string in
             if let emoji = string.first, emoji.isEmoji {
                 document.addEmoji(
                     String(emoji),
@@ -78,6 +81,7 @@ struct EmojiArtDocumentView: View {
                 )
             }
         }
+        return found
     }
 }
 
