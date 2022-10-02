@@ -70,15 +70,24 @@ struct EmojiArtDocumentView: View {
     
     private func drop(providers: [NSItemProvider], at location: CGPoint, in geometry: GeometryProxy) -> Bool {
         var found = providers.loadObjects(ofType: URL.self) { url in
-            document.setBackground(EmojiArtModel.Background.url(url.imageURL))
+            document.setBackground(.url(url.imageURL))
         }
-        found = providers.loadObjects(ofType: String.self) { string in
-            if let emoji = string.first, emoji.isEmoji {
-                document.addEmoji(
-                    String(emoji),
-                    location: convertToEmojiCoordinates(location, in: geometry),
-                    size: defaultEmojiFontSize
-                )
+        if !found {
+            found = providers.loadObjects(ofType: UIImage.self) { image in
+                if let data = image.jpegData(compressionQuality: 1.0) {
+                    document.setBackground(.imageData(data))
+                }
+            }
+        }
+        if !found {
+            found = providers.loadObjects(ofType: String.self) { string in
+                if let emoji = string.first, emoji.isEmoji {
+                    document.addEmoji(
+                        String(emoji),
+                        location: convertToEmojiCoordinates(location, in: geometry),
+                        size: defaultEmojiFontSize
+                    )
+                }
             }
         }
         return found
