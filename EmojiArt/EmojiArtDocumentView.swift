@@ -11,7 +11,8 @@ struct EmojiArtDocumentView: View {
     /// ViewModel
     @ObservedObject var document: EmojiArtDocument
     
-    @State private var zoomScale: CGFloat = 1
+    @State private var steadyStateZoomScale: CGFloat = 1
+    @GestureState private var gestureZoomScale: CGFloat = 1
     
     let testEmojis = "😀😃😄😆🥹🥳🤩😅😂🤣🥲☺️😊"
     let defaultEmojiFontSize: CGFloat = 40
@@ -48,6 +49,7 @@ struct EmojiArtDocumentView: View {
             .onDrop(of: [.plainText, .url, .image], isTargeted: nil) { providers, location in
                 drop(providers: providers, at: location, in: geometry)
             }
+            .gesture(zoomGesture())
         }
     }
     
@@ -57,6 +59,37 @@ struct EmojiArtDocumentView: View {
     }
     
     // MARK: - Helpers
+    
+    private var zoomScale: CGFloat {
+        steadyStateZoomScale * gestureZoomScale
+    }
+    
+    private func zoomGesture() -> some Gesture {
+        MagnificationGesture()
+            .updating($gestureZoomScale) { latestGestureScale, gestureZoomScale, transaction in
+                gestureZoomScale = latestGestureScale
+            }
+            .onEnded { gestureScale in
+                steadyStateZoomScale *= gestureScale
+            }
+    }
+    
+    private func doubleTapZoom(in size: CGSize) -> some Gesture {
+        TapGesture(count: 2)
+            .onEnded {
+                withAnimation {
+                    zoomToFit(document.backgroundImage, in: size)
+                }
+            }
+    }
+    
+    private func zoomToFit(_ image: UIImage?, in size: CGSize) {
+        if let image = image, image.size.width > 0, image.size.height > 0, size.width > 0, size.height > 0 {
+            let hZoom = size.width / image.size.width
+            let vZoom = size.height / image.size.height
+            steadyStateZoomScale = min(hZoom, vZoom)
+        }
+    }
     
     private func fontSize(for emoji: EmojiArtModel.Emoji) -> CGFloat {
         CGFloat(emoji.size)
@@ -106,23 +139,6 @@ struct EmojiArtDocumentView: View {
             }
         }
         return found
-    }
-    
-    private func doubleTapZoom(in size: CGSize) -> some Gesture {
-        TapGesture(count: 2)
-            .onEnded {
-                withAnimation {
-                    zoomToFit(document.backgroundImage, in: size)
-                }
-            }
-    }
-    
-    private func zoomToFit(_ image: UIImage?, in size: CGSize) {
-        if let image = image, image.size.width > 0, image.size.height > 0, size.width > 0, size.height > 0 {
-            let hZoom = size.width / image.size.width
-            let vZoom = size.height / image.size.height
-            zoomScale = min(hZoom, vZoom)
-        }
     }
 }
 
