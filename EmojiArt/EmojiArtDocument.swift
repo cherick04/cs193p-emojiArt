@@ -28,8 +28,8 @@ class EmojiArtDocument: ObservableObject {
         emojiArt.background = background
     }
     
-    func addEmoji(_ emoji: String, location: (x: Int, y: Int), size: Int) {
-        emojiArt.addEmoji(text: emoji, location: location, size: size)
+    func addEmoji(_ emoji: String, location: (x: Int, y: Int), size: CGFloat) {
+        emojiArt.addEmoji(text: emoji, location: location, size: Int(size))
     }
     
     func moveEmoji(_ emoji: EmojiArtModel.Emoji, by offset: CGSize) {
