@@ -14,7 +14,6 @@ struct EmojiArtDocumentView: View {
     @State var selectedEmojis = Set<EmojiArtModel.Emoji>()
     
     let testEmojis = "😀😃😄😆🥹🥳🤩😅😂🤣🥲☺️😊"
-    let defaultEmojiFontSize: CGFloat = 40
     
     var body: some View {
         VStack(spacing: 0) {
@@ -31,14 +30,15 @@ struct EmojiArtDocumentView: View {
                         .scaleEffect(zoomScale)
                         .position(convertFromEmojiCoordinates((0,0), in: geometry))
                 }
-                .gesture(doubleTapZoom(in: geometry.size))
+                .gesture(doubleTapZoom(in: geometry.size).exclusively(before: singleTapDeselect()))
                 
                 if document.backgroundImageFetchStatus == .fetching {
-                    ProgressView().scaleEffect(3)
+                    ProgressView().scaleEffect(Constants.progressViewScale)
                 } else {
                     ForEach(document.emojis) { emoji in
                             Text(emoji.text)
-                                .border(borderStyle(for: emoji))
+                                .padding(Constants.emojiPadding)
+                                .border(borderStyle(for: emoji), width: Constants.emojiBorderWidth)
                                 .font(.system(size: fontSize(for: emoji)))
                                 .scaleEffect(zoomScale)
                                 .position(position(for: emoji, in: geometry))
@@ -58,7 +58,7 @@ struct EmojiArtDocumentView: View {
     
     var palette: some View {
         ScrollingEmojisView(emojis: testEmojis)
-            .font(.system(size: defaultEmojiFontSize))
+            .font(.system(size: Constants.defaultEmojiFontSize))
     }
     
     // MARK: - Helpers
@@ -123,6 +123,13 @@ struct EmojiArtDocumentView: View {
         }
     }
     
+    private func singleTapDeselect() -> some Gesture {
+        TapGesture()
+            .onEnded {
+                selectedEmojis = []
+            }
+    }
+    
     private func fontSize(for emoji: EmojiArtModel.Emoji) -> CGFloat {
         CGFloat(emoji.size)
     }
@@ -165,12 +172,19 @@ struct EmojiArtDocumentView: View {
                     document.addEmoji(
                         String(emoji),
                         location: convertToEmojiCoordinates(location, in: geometry),
-                        size: defaultEmojiFontSize / zoomScale
+                        size: Constants.defaultEmojiFontSize / zoomScale
                     )
                 }
             }
         }
         return found
+    }
+    
+    private struct Constants {
+        static let defaultEmojiFontSize: CGFloat = 40
+        static let progressViewScale: CGFloat = 5
+        static let emojiPadding: CGFloat = 4
+        static let emojiBorderWidth: CGFloat = 2
     }
 }
 
