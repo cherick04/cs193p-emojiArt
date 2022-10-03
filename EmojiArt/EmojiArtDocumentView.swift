@@ -11,6 +11,8 @@ struct EmojiArtDocumentView: View {
     /// ViewModel
     @ObservedObject var document: EmojiArtDocument
     
+    @State var selectedEmojis = Set<EmojiArtModel.Emoji>()
+    
     let testEmojis = "😀😃😄😆🥹🥳🤩😅😂🤣🥲☺️😊"
     let defaultEmojiFontSize: CGFloat = 40
     
@@ -35,10 +37,14 @@ struct EmojiArtDocumentView: View {
                     ProgressView().scaleEffect(3)
                 } else {
                     ForEach(document.emojis) { emoji in
-                        Text(emoji.text)
-                            .font(.system(size: fontSize(for: emoji)))
-                            .scaleEffect(zoomScale)
-                            .position(position(for: emoji, in: geometry))
+                            Text(emoji.text)
+                                .border(borderStyle(for: emoji))
+                                .font(.system(size: fontSize(for: emoji)))
+                                .scaleEffect(zoomScale)
+                                .position(position(for: emoji, in: geometry))
+                                .onTapGesture {
+                                    selectedEmojis.toggle(matching: emoji)
+                                }
                     }
                 }
             }
@@ -56,6 +62,10 @@ struct EmojiArtDocumentView: View {
     }
     
     // MARK: - Helpers
+    
+    private func borderStyle(for emoji: EmojiArtModel.Emoji) -> Color {
+        selectedEmojis.contains(emoji) ? .green : .clear
+    }
     
     // MARK: Pan properties & methods
     

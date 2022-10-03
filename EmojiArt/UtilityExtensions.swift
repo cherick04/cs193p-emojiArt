@@ -121,3 +121,13 @@ extension Array where Element == NSItemProvider {
         loadObjects(ofType: theType, firstOnly: true, using: load)
     }
 }
+
+extension Set where Element: Identifiable {
+    mutating func toggle(matching element: Element) {
+        if contains(element) {
+            remove(element)
+        } else {
+            insert(element)
+        }
+    }
+}
