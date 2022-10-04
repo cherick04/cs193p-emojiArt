@@ -36,15 +36,13 @@ struct EmojiArtDocumentView: View {
                     ProgressView().scaleEffect(Constants.progressViewScale)
                 } else {
                     ForEach(document.emojis) { emoji in
-                            Text(emoji.text)
-                                .padding(Constants.emojiPadding)
-                                .border(borderStyle(for: emoji), width: Constants.emojiBorderWidth)
-                                .font(.system(size: fontSize(for: emoji)))
-                                .scaleEffect(zoomScale)
-                                .position(position(for: emoji, in: geometry))
-                                .onTapGesture {
-                                    selectedEmojis.toggle(matching: emoji)
-                                }
+                        Text(emoji.text)
+                            .padding(Constants.emojiPadding)
+                            .border(borderStyle(for: emoji), width: Constants.emojiBorderWidth)
+                            .font(.system(size: fontSize(for: emoji)))
+                            .scaleEffect(zoomScale)
+                            .position(position(for: emoji, in: geometry))
+                            .gesture(singleTapSelect(emoji))
                     }
                 }
             }
@@ -64,7 +62,7 @@ struct EmojiArtDocumentView: View {
     // MARK: - Helpers
     
     private func borderStyle(for emoji: EmojiArtModel.Emoji) -> Color {
-        selectedEmojis.contains(emoji) ? .green : .clear
+        selectedEmojis.contains(matching: emoji) ? .green : .clear
     }
     
     // MARK: Pan properties & methods
@@ -77,13 +75,26 @@ struct EmojiArtDocumentView: View {
     }
     
     private func panGesture() -> some Gesture {
-        DragGesture()
-            .updating($gesturePanOffset) { latestDragGestureValue, gesturePanOffset, _ in
-                gesturePanOffset = latestDragGestureValue.translation / zoomScale
-            }
-            .onEnded { dragGestureValue in
-                steadyStatePanOffset = steadyStatePanOffset + (dragGestureValue.translation / zoomScale)
-            }
+        if selectedEmojis.isEmpty {
+            return DragGesture()
+                .updating($gesturePanOffset) { latestDragGestureValue, gesturePanOffset, _ in
+                    gesturePanOffset = latestDragGestureValue.translation / zoomScale
+                }
+                .onEnded { dragGestureValue in
+                    steadyStatePanOffset = steadyStatePanOffset + (dragGestureValue.translation / zoomScale)
+                }
+        } else {
+            return DragGesture()
+                .updating($gesturePanOffset) { latestDragGestureValue, gesturePanOffset, _ in
+                    // TODO: 
+                }
+                .onEnded { dragGestureValue in
+                    print(dragGestureValue.translation)
+                    selectedEmojis.forEach { emoji in
+                        document.moveEmoji(emoji, by: dragGestureValue.translation / zoomScale)
+                    }
+                }
+        }
     }
     
     // MARK: Zoom properties & methods
@@ -121,6 +132,15 @@ struct EmojiArtDocumentView: View {
             steadyStatePanOffset = .zero
             steadyStateZoomScale = min(hZoom, vZoom)
         }
+    }
+    
+    // MARK: Tap properties & methods
+    
+    private func singleTapSelect(_ emoji: EmojiArtModel.Emoji) -> some Gesture {
+        TapGesture()
+            .onEnded {
+                selectedEmojis.toggle(matching: emoji)
+            }
     }
     
     private func singleTapDeselect() -> some Gesture {
