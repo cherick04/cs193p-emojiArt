@@ -42,7 +42,7 @@ struct EmojiArtDocumentView: View {
                             .font(.system(size: fontSize(for: emoji)))
                             .scaleEffect(zoomScale)
                             .position(position(for: emoji, in: geometry))
-                            .gesture(singleTapSelect(emoji))
+                            .gesture(singleTapSelection(for: emoji))
                     }
                 }
             }
@@ -69,6 +69,7 @@ struct EmojiArtDocumentView: View {
     
     @State private var steadyStatePanOffset: CGSize = .zero
     @GestureState private var gesturePanOffset: CGSize = .zero
+    @GestureState private var selectedEmojisGesturePanOffset: CGSize = .zero
     
     private var panOffset: CGSize {
         (steadyStatePanOffset + gesturePanOffset) * zoomScale
@@ -85,13 +86,13 @@ struct EmojiArtDocumentView: View {
                 }
         } else {
             return DragGesture()
-                .updating($gesturePanOffset) { latestDragGestureValue, gesturePanOffset, _ in
-                    // TODO: 
+                .updating($selectedEmojisGesturePanOffset) { latestDragGestureValue, gesturePanOffset, _ in
+                    gesturePanOffset = latestDragGestureValue.translation / zoomScale
                 }
                 .onEnded { dragGestureValue in
-                    print(dragGestureValue.translation)
                     selectedEmojis.forEach { emoji in
-                        document.moveEmoji(emoji, by: dragGestureValue.translation / zoomScale)
+                        let offset = dragGestureValue.translation / zoomScale
+                        document.moveEmoji(emoji, by: offset)
                     }
                 }
         }
@@ -136,7 +137,7 @@ struct EmojiArtDocumentView: View {
     
     // MARK: Tap properties & methods
     
-    private func singleTapSelect(_ emoji: EmojiArtModel.Emoji) -> some Gesture {
+    private func singleTapSelection(for emoji: EmojiArtModel.Emoji) -> some Gesture {
         TapGesture()
             .onEnded {
                 selectedEmojis.toggle(matching: emoji)
@@ -155,7 +156,16 @@ struct EmojiArtDocumentView: View {
     }
     
     private func position(for emoji: EmojiArtModel.Emoji, in geometry: GeometryProxy) -> CGPoint {
-        convertFromEmojiCoordinates((emoji.x, emoji.y), in: geometry)
+        let location = selectedEmojis.contains(matching: emoji)
+            ? temporaryLocation(for: emoji)
+            : (emoji.x, emoji.y)
+        return convertFromEmojiCoordinates(location, in: geometry)
+    }
+    
+    private func temporaryLocation(for emoji: EmojiArtModel.Emoji) -> (Int, Int) {
+        let x = emoji.x + Int(selectedEmojisGesturePanOffset.width)
+        let y = emoji.y + Int(selectedEmojisGesturePanOffset.height)
+        return (x, y)
     }
     
     private func convertToEmojiCoordinates(_ location: CGPoint, in geometry: GeometryProxy) -> (x: Int, y: Int) {
