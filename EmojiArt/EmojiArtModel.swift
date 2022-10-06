@@ -31,6 +31,10 @@ struct EmojiArtModel: Codable {
     
     init() {}
     
+    func json() throws -> Data {
+        return try JSONEncoder().encode(self)
+    }
+    
     mutating func addEmoji(text: String, location: (x: Int, y: Int), size: Int) {
         uniqueEmojiID += 1
         emojis.append(Emoji(text: text, x: location.x, y: location.y, size: size, id: uniqueEmojiID))
