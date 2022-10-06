@@ -9,20 +9,56 @@ import SwiftUI
 
 class EmojiArtDocument: ObservableObject {
     
+    // MARK: - Initializer
+    
+    init() {
+        if let url = Autosave.url, let autosavedEmojiArt = try? EmojiArtModel(url: url) {
+            emojiArt = autosavedEmojiArt
+            fetchBackgroundImageIfNecessary()
+        } else {
+            emojiArt = EmojiArtModel()
+        }
+    }
+    
+    // MARK: - Convenience properties
+    
     @Published private(set) var emojiArt: EmojiArtModel {
         didSet {
-            autosave()
+            scheduleAutosave()
             if emojiArt.background != oldValue.background {
                 fetchBackgroundImageIfNecessary()
             }
         }
     }
     
+    var emojis: [EmojiArtModel.Emoji] { emojiArt.emojis }
+    var background: EmojiArtModel.Background { emojiArt.background }
+    
+    @Published var backgroundImage: UIImage?
+    @Published var backgroundImageFetchStatus = BackgroundImageFetchStatus.idle
+    
+    enum BackgroundImageFetchStatus {
+        case idle
+        case fetching
+    }
+    
+    // MARK: - Helper properties and mehtods
+
+    private var autosaveTimer: Timer?
+    
     private struct Autosave {
         static let filename = "Autosave.emojiart"
         static var url: URL? {
             let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
             return documentDirectory?.appending(path: filename)
+        }
+        static let coalescingInterval = 5.0
+    }
+    
+    private func scheduleAutosave() {
+        autosaveTimer?.invalidate()
+        autosaveTimer = Timer.scheduledTimer(withTimeInterval: Autosave.coalescingInterval, repeats: false) { _ in
+            self.autosave()
         }
     }
     
@@ -46,31 +82,6 @@ class EmojiArtDocument: ObservableObject {
             print("\(thisFunction) error: \(error.localizedDescription)")
         }
     }
-    
-    init() {
-        if let url = Autosave.url, let autosavedEmojiArt = try? EmojiArtModel(url: url) {
-            emojiArt = autosavedEmojiArt
-            fetchBackgroundImageIfNecessary()
-        } else {
-            emojiArt = EmojiArtModel()
-        }
-    }
-    
-    // MARK: - Convenience properties
-    
-    var emojis: [EmojiArtModel.Emoji] { emojiArt.emojis }
-    var background: EmojiArtModel.Background { emojiArt.background }
-    
-    @Published var backgroundImage: UIImage?
-    @Published var backgroundImageFetchStatus = BackgroundImageFetchStatus.idle
-    
-    enum BackgroundImageFetchStatus {
-        case idle
-        case fetching
-    }
-    
-    // MARK: - Private Methods
-    
     private func fetchBackgroundImageIfNecessary() {
         backgroundImage = nil
         switch emojiArt.background {
