@@ -22,10 +22,15 @@ struct Palette: Identifiable {
 class PaletteStore: ObservableObject {
     let name: String
     
-    @Published var palettes = [Palette]()
-    
+    @Published var palettes = [Palette]() {
+        didSet {
+            storeInUserDefaults()
+        }
+    }
+
     init(named name: String) {
         self.name = name
+        restoreFromUserDefaults()
         if palettes.isEmpty {
             insertPalette(named: "Vehicles", emojis: "🚙🚗🚘🚕🚖🏎🚚🛻🚛🚐🚓🚔🚑🚒🚀✈️🛫🛬🛩🚁🛸🚲🏍🛶⛵️🚤🛥🛳⛴🚢🚂🚝🚅🚆🚊🚉🚇🛺🚜")
             insertPalette(named: "Sports", emojis: "🏈⚾️🏀⚽️🎾🏐🥏🏓⛳️🥅🥌🏂⛷🎳")
@@ -37,6 +42,17 @@ class PaletteStore: ObservableObject {
             insertPalette(named: "COVID", emojis: "💉🦠😷🤧🤒")
             insertPalette(named: "Faces", emojis: "😀😃😄😁😆😅😂🤣🥲☺️😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🥸🤩🥳😏😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤯😳🥶😥😓🤗🤔🤭🤫🤥😬🙄😯😧🥱😴🤮😷🤧🤒🤠")
         }
+    }
+    
+    // MARK: - Private
+    
+    private var userDefaultsKey: String {
+        "PaletteStore:" + name
+    }
+    
+    private func storeInUserDefaults() {
+        let plist = palettes.map { [$0.name, $0.emojis, String($0.id)] }
+        UserDefaults.standard.set(plist, forKey: userDefaultsKey)
     }
     
     // MARK: - Intent(s)
