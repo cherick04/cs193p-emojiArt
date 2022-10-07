@@ -8,16 +8,18 @@
 import SwiftUI
 
 struct PaletteChooser: View {
-    let testEmojis = "😀😃😄😆🥹🥳🤩😅😂🤣🥲☺️😊"
-    
     var emojiFontSize: CGFloat = 40
     var emojiFont: Font { .system(size: emojiFontSize) }
     
     @EnvironmentObject var store: PaletteStore
     
     var body: some View {
-        ScrollingEmojisView(emojis: testEmojis)
-            .font(emojiFont)
+        let palette = store.palette(at: 0)
+        HStack {
+            Text(palette.name)
+            ScrollingEmojisView(emojis: palette.emojis)
+                .font(emojiFont)
+        }
     }
 }
 
