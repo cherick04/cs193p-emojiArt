@@ -13,7 +13,9 @@ struct PaletteChooser: View {
     
     @EnvironmentObject var store: PaletteStore
     
-    @State var chosenPaletteIndex = 0
+    @State private var chosenPaletteIndex = 0
+//    @State private var editing = false
+    @State private var paletteToEdit: Palette?
     
     var body: some View {
         HStack {
@@ -37,8 +39,14 @@ struct PaletteChooser: View {
     
     @ViewBuilder
     private var contextMenu: some View {
+        AnimatedActionButton(title: "Editing", systemImage: "pencil") {
+//            editing = true
+            paletteToEdit = store.palette(at: chosenPaletteIndex)
+        }
         AnimatedActionButton(title: "New", systemImage: "plus") {
             store.insertPalette(named: "New", emojis: "", at: chosenPaletteIndex)
+//            editing = true
+            paletteToEdit = store.palette(at: chosenPaletteIndex)
         }
         AnimatedActionButton(title: "Delete", systemImage: "minus.circle") {
             chosenPaletteIndex = store.removePalette(at: chosenPaletteIndex)
@@ -68,6 +76,12 @@ struct PaletteChooser: View {
         }
         .id(palette.id)
         .transition(rollTransition)
+//        .popover(isPresented: $editing) {
+//            PaletteEditor(palette: $store.palettes[chosenPaletteIndex])
+//        }
+        .popover(item: $paletteToEdit) { palette in
+            PaletteEditor(palette: $store.palettes[palette])
+        }
     }
     
     private var rollTransition: AnyTransition {
