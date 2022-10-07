@@ -13,12 +13,10 @@ struct EmojiArtDocumentView: View {
     
     @State var selectedEmojis = Set<EmojiArtModel.Emoji>()
     
-    let testEmojis = "😀😃😄😆🥹🥳🤩😅😂🤣🥲☺️😊"
-    
     var body: some View {
         VStack(spacing: 0) {
             documentBody
-            palette
+            PaletteChooser(emojiFontSize: Constants.defaultEmojiFontSize)
         }
     }
     
@@ -52,11 +50,6 @@ struct EmojiArtDocumentView: View {
             }
             .gesture(panGesture().simultaneously(with: zoomGesture()))
         }
-    }
-    
-    var palette: some View {
-        ScrollingEmojisView(emojis: testEmojis)
-            .font(.system(size: Constants.defaultEmojiFontSize))
     }
     
     // MARK: - Pan properties & methods
@@ -220,21 +213,6 @@ struct EmojiArtDocumentView: View {
         static let progressViewScale: CGFloat = 5
         static let emojiPadding: CGFloat = 4
         static let emojiBorderWidth: CGFloat = 2
-    }
-}
-
-struct ScrollingEmojisView: View {
-    let emojis: String
-    
-    var body: some View {
-        ScrollView(.horizontal) {
-            HStack {
-                ForEach(emojis.map { String($0) }, id: \.self) { emoji in
-                    Text(emoji)
-                        .onDrag { NSItemProvider(object: emoji as NSString) }
-                }
-            }
-        }
     }
 }
 

@@ -23,6 +23,23 @@ extension CGRect {
     }
 }
 
+// some extensions to String and Character
+// to help us with managing our Strings of emojis
+// we want them to be "emoji only"
+// (thus isEmoji below)
+// and we don't want them to have repeated emojis
+// (thus withoutDuplicateCharacters below)
+
+extension String {
+    var removingDuplicateCharacters: String {
+        reduce(into: "") { sofar, element in
+            if !sofar.contains(element) {
+                sofar.append(element)
+            }
+        }
+    }
+}
+
 extension Character {
     var isEmoji: Bool {
         // Swift does not have a way to ask if a Character isEmoji
