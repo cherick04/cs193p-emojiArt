@@ -23,7 +23,7 @@ struct PaletteChooser: View {
         .clipped()
     }
     
-    var paletteControlButton: some View {
+    private var paletteControlButton: some View {
         Button {
             withAnimation {
                 chosenPaletteIndex = (chosenPaletteIndex + 1) % store.palettes.count
@@ -36,12 +36,27 @@ struct PaletteChooser: View {
     }
     
     @ViewBuilder
-    var contextMenu: some View {
+    private var contextMenu: some View {
         AnimatedActionButton(title: "New", systemImage: "plus") {
             store.insertPalette(named: "New", emojis: "", at: chosenPaletteIndex)
         }
         AnimatedActionButton(title: "Delete", systemImage: "minus.circle") {
             chosenPaletteIndex = store.removePalette(at: chosenPaletteIndex)
+        }
+        goToMenu
+    }
+    
+    private var goToMenu: some View {
+        Menu {
+            ForEach(store.palettes) { palette in
+                AnimatedActionButton(title: palette.name) {
+                    if let index = store.palettes.index(matching: palette) {
+                        chosenPaletteIndex = index
+                    }
+                }
+            }
+        } label: {
+            Label("Go to", systemImage: "text.insert")
         }
     }
     
