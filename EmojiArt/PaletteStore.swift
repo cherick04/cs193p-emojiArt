@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct Palette: Identifiable, Codable {
-    let name: String
-    let emojis: String
+    var name: String
+    var emojis: String
     let id: Int
     
     fileprivate init(name: String, emojis: String, id: Int) {
