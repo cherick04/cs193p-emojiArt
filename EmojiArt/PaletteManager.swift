@@ -26,6 +26,9 @@ struct PaletteManager: View {
                 .onDelete { indexSet in
                     store.palettes.remove(atOffsets: indexSet)
                 }
+                .onMove { indexSet, newOffset in
+                    store.palettes.move(fromOffsets: indexSet, toOffset: newOffset)
+                }
             }
             .navigationTitle("Manage palettes")
             .navigationBarTitleDisplayMode(.inline)
