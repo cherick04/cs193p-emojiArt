@@ -18,9 +18,10 @@ struct PaletteManager: View {
                 ForEach(store.palettes) { palette in
                     NavigationLink(destination: PaletteEditor(palette: $store.palettes[palette])) {
                         VStack(alignment: .leading) {
-                            Text(palette.name).foregroundColor(editMode == .active ? .red : .black)
+                            Text(palette.name)
                             Text(palette.emojis)
                         }
+                        .gesture(editMode == .active ? tap : nil)
                     }
                 }
                 .onDelete { indexSet in
@@ -37,6 +38,10 @@ struct PaletteManager: View {
             }
             .environment(\.editMode, $editMode)
         }
+    }
+    
+    private var tap: some Gesture {
+        TapGesture().onEnded { print("Tapped palette while editing")}
     }
 }
 
