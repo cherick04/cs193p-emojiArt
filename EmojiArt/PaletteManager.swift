@@ -23,6 +23,9 @@ struct PaletteManager: View {
                         }
                     }
                 }
+                .onDelete { indexSet in
+                    store.palettes.remove(atOffsets: indexSet)
+                }
             }
             .navigationTitle("Manage palettes")
             .navigationBarTitleDisplayMode(.inline)
