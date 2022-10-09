@@ -11,7 +11,8 @@ struct EmojiArtDocumentView: View {
     /// ViewModel
     @ObservedObject var document: EmojiArtDocument
     
-    @State var selectedEmojis = Set<EmojiArtModel.Emoji>()
+    @State private var selectedEmojis = Set<EmojiArtModel.Emoji>()
+    @State private var alertToShow: IdentifiableAlert?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -49,6 +50,17 @@ struct EmojiArtDocumentView: View {
                 drop(providers: providers, at: location, in: geometry)
             }
             .gesture(panGesture().simultaneously(with: zoomGesture()))
+            .alert(item: $alertToShow) { alertToShow in
+                alertToShow.alert()
+            }
+            .onChange(of: document.backgroundImageFetchStatus) { status in
+                switch status {
+                case .failed(let url):
+                    showBackgroundImageFetchFailedAlert(url)
+                default:
+                    break
+                }
+            }
         }
     }
     
@@ -206,6 +218,16 @@ struct EmojiArtDocumentView: View {
             }
         }
         return found
+    }
+    
+    private func showBackgroundImageFetchFailedAlert(_ url: URL) {
+        alertToShow = IdentifiableAlert(id: "Fetch failed for: " + url.absoluteString, alert: {
+                Alert(
+                    title: Text("Background Image Fetch"),
+                    message: Text("Couldn't load image from \(url)"),
+                    dismissButton: .default(Text("OK"))
+                )
+            })
     }
     
     private struct Constants {
