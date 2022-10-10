@@ -34,6 +34,11 @@ struct EmojiArtDocumentView: View {
                 if document.backgroundImageFetchStatus == .fetching {
                     ProgressView().scaleEffect(Constants.progressViewScale)
                 } else {
+                    if !selectedEmojis.isEmpty {
+                        deleteButton
+                            .position(x: geometry.size.center.x, y: 0)
+                            .padding(.top, Constants.deleteButtonTopPadding)
+                    }
                     ForEach(document.emojis) { emoji in
                         Text(emoji.text)
                             .padding(Constants.emojiPadding)
@@ -62,6 +67,18 @@ struct EmojiArtDocumentView: View {
                 }
             }
         }
+    }
+    
+    private var deleteButton: some View {
+        Button(role: .destructive, action: {
+            selectedEmojis.forEach { emoji in
+                document.removeEmoji(emoji)
+            }
+            selectedEmojis = []
+        }, label: {
+            Image(systemName: "trash.fill")
+                .font(.largeTitle)
+        })
     }
     
     // MARK: - Pan properties & methods
@@ -235,6 +252,7 @@ struct EmojiArtDocumentView: View {
         static let progressViewScale: CGFloat = 5
         static let emojiPadding: CGFloat = 4
         static let emojiBorderWidth: CGFloat = 2
+        static let deleteButtonTopPadding: CGFloat = 30
     }
 }
 
