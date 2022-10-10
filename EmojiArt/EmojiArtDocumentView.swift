@@ -39,12 +39,13 @@ struct EmojiArtDocumentView: View {
                             .position(x: geometry.size.center.x, y: 0)
                             .padding(.top, Constants.deleteButtonTopPadding)
                     }
+                    // TODO: Fix repositioning and selection after performing gestures on selected emojis
                     ForEach(document.emojis) { emoji in
                         Text(emoji.text)
                             .padding(Constants.emojiPadding)
                             .border(borderStyle(for: emoji), width: Constants.emojiBorderWidth)
                             .font(.system(size: fontSize(for: emoji)))
-                            .scaleEffect(zoomScale)
+                            .scaleEffect(zoomScale(for: emoji))
                             .position(position(for: emoji, in: geometry))
                             .gesture(singleTapSelection(for: emoji))
                     }
@@ -117,7 +118,6 @@ struct EmojiArtDocumentView: View {
     @State private var steadyStateZoomScale: CGFloat = 1
     @GestureState private var gestureZoomScale: CGFloat = 1
 
-    // TODO: - Update emoji while updating. Check this property logic
     private var zoomScale: CGFloat {
         selectedEmojis.isEmpty ? steadyStateZoomScale * gestureZoomScale : steadyStateZoomScale
     }
@@ -136,6 +136,12 @@ struct EmojiArtDocumentView: View {
                     }
                 }
             }
+    }
+    
+    private func zoomScale(for emoji: EmojiArtModel.Emoji) -> CGFloat {
+        selectedEmojis.contains(matching: emoji)
+        ? steadyStateZoomScale * gestureZoomScale
+        : zoomScale
     }
     
     private func doubleTapZoom(in size: CGSize) -> some Gesture {
